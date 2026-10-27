@@ -1318,12 +1318,15 @@ function checkAndTriggerPeriodReminder() {
   reminderDate.setHours(0, 0, 0, 0);
 
   $("reminderStatusText").textContent = `Next 2-day reminder scheduled for: ${formatDate(reminderDate)}`;
-// Sync next period date with OneSignal tag
+// Sync 2-day pre-period reminder date with OneSignal tag
     if (window.OneSignalDeferred && currentPredictions && currentPredictions.nextPeriod) {
       OneSignalDeferred.push(function(OneSignal) {
-        const nextDate = new Date(currentPredictions.nextPeriod);
-        const dateFormatted = nextDate.toISOString().split('T')[0];
-        OneSignal.User.addTag("next_period_date", dateFormatted);
+        // Calculate exact reminder date (2 days before period)
+        const reminderDateObj = addDays(currentPredictions.nextPeriod, -2);
+        const dateFormatted = reminderDateObj.toISOString().split('T')[0];
+        
+        // Send the calculated reminder date tag to OneSignal
+        OneSignal.User.addTag("reminder_date", dateFormatted);
       });
     }
   if (dateKey(today) === dateKey(reminderDate)) {
