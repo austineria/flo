@@ -1318,7 +1318,14 @@ function checkAndTriggerPeriodReminder() {
   reminderDate.setHours(0, 0, 0, 0);
 
   $("reminderStatusText").textContent = `Next 2-day reminder scheduled for: ${formatDate(reminderDate)}`;
-
+// Sync next period date with OneSignal tag
+    if (window.OneSignalDeferred && currentPredictions && currentPredictions.nextPeriod) {
+      OneSignalDeferred.push(function(OneSignal) {
+        const nextDate = new Date(currentPredictions.nextPeriod);
+        const dateFormatted = nextDate.toISOString().split('T')[0];
+        OneSignal.User.addTag("next_period_date", dateFormatted);
+      });
+    }
   if (dateKey(today) === dateKey(reminderDate)) {
     const lastNotified = localStorage.getItem("gf_last_notified");
     const notificationKey = dateKey(today) + "_" + dateKey(currentPredictions.nextPeriod);
