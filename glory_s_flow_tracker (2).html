@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#492744">
+<title>GLORY'S FLOW | Period & Ovulation Tracker</title>
+
+<!-- FontAwesome Icons for clean UI elements -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+:root {
+  --primary-color: #e27396;
+  --primary-gradient: linear-gradient(135deg, #f7aef8, #b388ff);
+  --pink-accent: #ff85a1;
+  --pink-light: #ffdae9;
+  --lavender: #d8bbff;
+  --green: #a3e635;
+  --green-bg: rgba(163, 230, 53, 0.25);
+  --pink-bg: rgba(255, 133, 161, 0.35);
+  --lavender-bg: rgba(216, 187, 255, 0.35);
+
+  /* Default Dark Glass Variables */
+  --bg-overlay: linear-gradient(135deg, rgba(15, 12, 29, 0.55), rgba(36, 18, 54, 0.45));
+  --card-bg: rgba(22, 13, 33, 0.65);
+  --card-border: rgba(255, 255, 255, 0.18);
+  --text-main: #ffffff;
+  --text-muted: #e2d9f3;
+  --text-sub: #b3a5ca;
+  --input-bg: rgba(255, 255, 255, 0.95);
+  --input-text: #2d1832;
+  --shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="light"] {
+  --bg-overlay: linear-gradient(135deg, rgba(255, 255, 255, 0.40), rgba(245, 230, 248, 0.30));
+  --card-bg: rgba(255, 255, 255, 0.78);
+  --card-border: rgba(255, 255, 255, 0.60);
+  --text-main: #2a1128;
+  --text-muted: #4a284b;
+  --text-sub: #6e4170;
+  --input-bg: #ffffff;
+  --input-text: #2a1128;
+  --shadow: 0 12px 35px rgba(112, 70, 109, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: var(--text-main);
+  background-color: #2f1530;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* CUSTOM FULL-SCREEN BACKGROUND IMAGE WITH OVERLAY */
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  transition: background-image 0.5s ease-in-out;
+}
+
+.bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--bg-overlay);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+button, input, select {
+  font: inherit;
+}
+
+.app {
+  width: min(100%, 1050px);
+  margin: auto;
+  padding: 20px 16px 50px;
+}
+
+/* TOP NAVIGATION BAR */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.brand-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--primary-gradient);
+  color: #2f1530;
+  font-size: 22px;
+  box-shadow: 0 4px 15px rgba(247, 174, 248, 0.4);
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.top-btn {
+  padding: 8px 14px;
+  border: 1px solid var(--card-border);
+  border-radius: 30px;
+  background: var(--card-bg);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.top-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--pink-accent);
+}
+
+/* CALENDAR DROPDOWN MENU */
+.calendar-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 110%;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 8px;
+  min-width: 190px;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow);
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dropdown-item:hover {
+  background: rgba(255, 133, 161, 0.2);
+  color: var(--pink-accent);
+}
+
+/* HERO SECTION */
+.hero {
+  margin-bottom: 24px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.25);
+}
+
+.eyebrow {
+  color: var(--pink-light);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+h1 {
+  font-size: clamp(32px, 6vw, 52px);
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin: 0 0 12px;
+  font-weight: 800;
+}
+
+.hero p {
+  color: var(--text-muted);
+  max-width: 560px;
+  line-height: 1.6;
+  font-size: 15px;
+  margin: 0;
+}
+
+/* NOTIFICATION PANEL BANNER */
+.notification-banner {
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 16px 20px;
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow);
+}
+
+.notification-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.notification-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--primary-gradient);
+  color: #2a1128;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.notification-text h3 {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.notification-text p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+.notification-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.granted {
+  background: rgba(163, 230, 53, 0.2);
+  color: #a3e635;
+  border: 1px solid rgba(163, 230, 53, 0.4);
+}
+
+.status-badge.prompt {
+  background: rgba(255, 209, 102, 0.2);
+  color: #ffd166;
+  border: 1px solid rgba(255, 209, 102, 0.4);
+}
+
+.status-badge.denied {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.4);
+}
+
+/* GRID LAYOUT */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.card {
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  padding: 24px;
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+.card h2 {
+  font-size: 20px;
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.description {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-sub);
+  margin: 0 0 20px;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+input, select {
+  width: 100%;
+  padding: 13px 15px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: var(--input-bg);
+  color: var(--input-text);
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+}
+
+input:focus, select:focus {
+  border-color: var(--pink-accent);
+  box-shadow: 0 0 0 3px rgba(255, 133, 161, 0.3);
+}
+
+.hint {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-sub);
+  margin-top: 6px;
+}
+
+.primary-button {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  background: var(--primary-gradient);
+  color: #2a1128;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(179, 136, 255, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(179, 136, 255, 0.5);
+}
+
+.error {
+  display: none;
+  color: #ffd166;
+  background: rgba(255, 209, 102, 0.15);
+  border: 1px solid rgba(255, 209, 102, 0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 12px;
+}
+
+.result-card {
+  margin-bottom: 14px;
+  padding: 16px;
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.result-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  color: #2a1128;
+}
+
+.period-icon { background: var(--pink-accent); }
+.ovulation-icon { background: var(--lavender); }
+.fertile-icon { background: var(--green); }
+
+.result-label {
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  color: var(--text-sub);
+  font-weight: 700;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.result-date {
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.result-note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-sub);
+  margin-top: 8px;
+}
+
+/* CALENDAR STYLES */
+.calendar-card {
+  margin-top: 10px;
+}
+
+.calendar-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.calendar-nav-btn {
+  background: var(--card-border);
+  border: none;
+  color: var(--text-main);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+}
+
+.calendar-nav-btn:hover {
+  background: var(--pink-accent);
+  color: #2a1128;
+}
+
+.month-label {
+  font-size: 14px;
+  color: var(--text-main);
+  font-weight: 800;
+}
+
+.calendar {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 5px;
+  table-layout: fixed;
+}
+
+.calendar th {
+  font-size: 11px;
+  color: var(--text-sub);
+  padding: 8px 0;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.calendar td {
+  text-align: center;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.calendar td.blank {
+  background: transparent;
+}
+
+.calendar td.period {
+  background: var(--pink-accent);
+  color: #2a1128;
+  font-weight: 800;
+}
+
+.calendar td.fertile {
+  background: var(--green);
+  color: #1a3a0f;
+  font-weight: 800;
+}
+
+.calendar td.ovulation {
+  background: var(--lavender);
+  color: #2a1128;
+  font-weight: 900;
+  outline: 2px solid #ffffff;
+}
+
+.calendar td.today {
+  box-shadow: inset 0 0 0 2px var(--text-main);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 18px;
+  font-weight: 600;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+/* HISTORY LOG */
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.history-info strong {
+  display: block;
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.history-info span {
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: #ff6b6b;
+  cursor: pointer;
+  padding: 6px;
+  font-size: 14px;
+  border-radius: 6px;
+}
+
+.delete-btn:hover {
+  background: rgba(255, 107, 107, 0.15);
+}
+
+.toggle-history-btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--pink-light);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.toggle-history-btn:hover {
+  background: rgba(255, 133, 161, 0.15);
+}
+
+/* WARNING BOX */
+.warning {
+  background: rgba(255, 209, 102, 0.1);
+  border: 1px solid rgba(255, 209, 102, 0.3);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-top: 20px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.warning strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffd166;
+  margin-bottom: 4px;
+}
+
+footer {
+  text-align: center;
+  color: var(--text-sub);
+  font-size: 12px;
+  line-height: 1.8;
+  padding: 30px 10px 0;
+}
+
+/* MODAL FOR BACKGROUND UPLOAD */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  place-items: center;
+  padding: 20px;
+}
+
+.modal.active {
+  display: grid;
+}
+
+.modal-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  padding: 24px;
+  width: min(100%, 450px);
+  color: var(--text-main);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-modal {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .app {
+    padding: 14px 12px 30px;
+  }
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    padding: 18px;
+  }
+  h1 {
+    font-size: 36px;
+  }
+  .topbar {
+    justify-content: space-between;
+  }
+  .notification-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- DYNAMIC BACKGROUND LAYERS -->
+<div class="bg-layer" id="bgLayer"></div>
+<div class="bg-overlay"></div>
+
+<div class="app">
+
+  <!-- TOP BAR & SETTINGS -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-heart"></i></div>
+      <span>GLORY'S FLOW</span>
+    </div>
+    <div class="top-actions">
+
+      <!-- ADD TO CALENDAR BUTTON WITH DROPDOWN -->
+      <div class="calendar-dropdown">
+        <button class="top-btn" id="addToCalendarBtn" title="Sync with your calendar">
+          <i class="fa-solid fa-calendar-plus" style="color: var(--pink-accent);"></i> Add to Calendar <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+        </button>
+        <div class="dropdown-menu" id="calendarDropdownMenu">
+          <button class="dropdown-item" id="googleCalBtn">
+            <i class="fa-brands fa-google" style="color: #4285F4;"></i> Google Calendar
+          </button>
+          <button class="dropdown-item" id="appleCalBtn">
+            <i class="fa-brands fa-apple"></i> Apple / Outlook (.ics)
+          </button>
+        </div>
+      </div>
+
+      <button class="top-btn" id="bgPickerBtn" title="Change Background Image">
+        <i class="fa-solid fa-image"></i> Custom Background
+      </button>
+      <button class="top-btn" id="themeToggleBtn" title="Toggle Theme">
+        <i class="fa-solid fa-moon" id="themeIcon"></i> <span id="themeText">Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="eyebrow">Your personal cycle space</div>
+    <h1>Understand your<br>cycle, with ease.</h1>
+    <p>
+      Your body has its own rhythm. Track your period, receive timely 2-day notifications, and keep your history intact over time with GLORY'S FLOW.
+    </p>
+  </section>
+
+  <!-- NOTIFICATION CONTROL BANNER -->
+  <section class="notification-banner">
+    <div class="notification-info">
+      <div class="notification-icon"><i class="fa-solid fa-bell"></i></div>
+      <div class="notification-text">
+        <h3>2-Day Period Reminder Notifications</h3>
+        <p id="reminderStatusText">Calculated reminder date: Not set yet.</p>
+      </div>
+    </div>
+    <div class="notification-actions">
+      <span class="status-badge prompt" id="notificationStatusBadge">Prompt</span>
+      <button class="top-btn" id="enableNotifyBtn"><i class="fa-solid fa-check"></i> Enable Notifications</button>
+      <button class="top-btn" id="testNotifyBtn"><i class="fa-solid fa-paper-plane"></i> Test Notification Now</button>
+    </div>
+  </section>
+
+  <!-- MAIN GRID LAYOUT -->
+  <div class="layout">
+
+    <!-- INPUT FORM CARD -->
+    <section class="card" id="formCard">
+      <h2><i class="fa-solid fa-seedling" style="color:var(--pink-accent);"></i> Let's track your cycle 🌷</h2>
+      <p class="description">
+        Enter your details below. Your entries will be automatically saved and updated!
+      </p>
+
+      <form id="cycleForm">
+
+        <div class="field">
+          <label for="lastPeriod">FIRST DAY OF YOUR LAST PERIOD</label>
+          <input type="date" id="lastPeriod" required>
+          <div class="hint">Select the day your last bleeding started.</div>
+        </div>
+
+        <div class="field">
+          <label for="cycleLength">HOW MANY DAYS IS YOUR CYCLE?</label>
+          <select id="cycleLength">
+            <option value="21">21 days</option>
+            <option value="22">22 days</option>
+            <option value="23">23 days</option>
+            <option value="24">24 days</option>
+            <option value="25">25 days</option>
+            <option value="26">26 days</option>
+            <option value="27">27 days</option>
+            <option value="28" selected>28 days</option>
+            <option value="29">29 days</option>
+            <option value="30">30 days</option>
+            <option value="31">31 days</option>
+            <option value="32">32 days</option>
+            <option value="33">33 days</option>
+            <option value="34">34 days</option>
+            <option value="35">35 days</option>
+            <option value="36">36 days</option>
+            <option value="37">37 days</option>
+            <option value="38">38 days</option>
+            <option value="39">39 days</option>
+            <option value="40">40 days</option>
+          </select>
+          <div class="hint">Average time from start of one period to start of the next.</div>
+        </div>
+
+        <div class="field">
+          <label for="periodLength">HOW LONG DOES YOUR PERIOD LAST?</label>
+          <select id="periodLength">
+            <option value="2">2 days</option>
+            <option value="3">3 days</option>
+            <option value="4">4 days</option>
+            <option value="5" selected>5 days</option>
+            <option value="6">6 days</option>
+            <option value="7">7 days</option>
+            <option value="8">8 days</option>
+            <option value="9">9 days</option>
+            <option value="10">10 days</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="regularity">ARE YOUR PERIODS REGULAR?</label>
+          <select id="regularity">
+            <option value="regular">Mostly regular</option>
+            <option value="irregular">They change a lot</option>
+            <option value="unsure">I'm not sure</option>
+          </select>
+        </div>
+
+        <button type="submit" class="primary-button">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Save & Calculate Cycle
+        </button>
+
+        <div id="error" class="error" role="alert"></div>
+
+      </form>
+    </section>
+
+    <!-- PREDICTION SNAPSHOT CARDS -->
+    <div>
+      <section class="card" id="resultsCard">
+        <h2><i class="fa-solid fa-chart-pie" style="color:var(--lavender);"></i> Your cycle snapshot</h2>
+        <p class="description">
+          Automated live cycle projections based on your saved logs.
+        </p>
+
+        <div class="result-card">
+          <div class="result-row">
+            <div class="result-icon period-icon"><i class="fa-solid fa-droplet"></i></div>
+            <div>
+              <div class="result-label">NEXT EXPECTED PERIOD</div>
+              <div class="result-date" id="nextPeriod">Waiting for your dates</div>
+            </div>
+          </div>
+          <div class="result-note" id="periodNote">
+            Your expected period dates will appear here.
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-row">
+            <div class="result-icon ovulation-icon"><i class="fa-solid fa-spa"></i></div>
+            <div>
+              <div class="result-label">ESTIMATED OVULATION DAY</div>
+              <div class="result-date" id="ovulation">Waiting for your dates</div>
+            </div>
+          </div>
+          <div class="result-note">
+            Estimated mid-cycle egg release date.
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-row">
+            <div class="result-icon fertile-icon"><i class="fa-solid fa-leaf"></i></div>
+            <div>
+              <div class="result-label">ESTIMATED FERTILE WINDOW</div>
+              <div class="result-date" id="fertile">Waiting for your dates</div>
+            </div>
+          </div>
+          <div class="result-note">
+            Days during which conception is most likely.
+          </div>
+        </div>
+      </section>
+
+      <!-- PAST CYCLE LOG HISTORY CARD WITH DROPDOWN SHOW MORE -->
+      <section class="card" id="historyCard">
+        <h2><i class="fa-solid fa-clock-rotate-left" style="color:var(--pink-accent);"></i> Past Period History</h2>
+        <p class="description">Your previously saved cycles:</p>
+        <div id="historyList">
+          <div style="font-size: 12px; color: var(--text-sub); text-align: center; padding: 10px;">No logged past cycles yet.</div>
+        </div>
+        <button id="toggleHistoryBtn" class="toggle-history-btn" style="display: none;">
+          <span id="toggleHistoryText">See More History</span> <i class="fa-solid fa-chevron-down" id="toggleHistoryIcon"></i>
+        </button>
+      </section>
+    </div>
+
+  </div>
+
+  <!-- INTERACTIVE CALENDAR SECTION -->
+  <section class="card calendar-card" id="calendarCard">
+    <div class="calendar-heading">
+      <h2><i class="fa-solid fa-calendar-days" style="color:var(--pink-accent);"></i> Cycle Calendar</h2>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button class="calendar-nav-btn" id="prevMonth"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="month-label" id="monthLabel">Month Year</span>
+        <button class="calendar-nav-btn" id="nextMonth"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+
+    <div id="calendar"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <span class="legend-dot" style="background:var(--pink-accent)"></span>
+        Period
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot" style="background:var(--green)"></span>
+        Fertile window
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot" style="background:var(--lavender)"></span>
+        Ovulation
+      </div>
+    </div>
+
+    <div class="warning">
+      <strong><i class="fa-solid fa-triangle-exclamation"></i> Medical Disclaimer</strong>
+      All predictions are mathematical estimates based on standard cycle algorithms. Ovulation timing varies naturally. Do not rely solely on these calculations for contraception.
+    </div>
+  </section>
+
+  <footer>
+    GLORY'S FLOW · Personal Cycle Tracker ♡<br>
+    Your privacy matters. All data is saved directly on your device.
+  </footer>
+
+</div>
+
+<!-- BACKGROUND SELECTION MODAL -->
+<div class="modal" id="bgModal">
+  <div class="modal-card">
+    <div class="modal-title">
+      <span><i class="fa-solid fa-image"></i> Choose Background</span>
+      <button class="close-modal" id="closeBgModal"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <p class="description">Upload your photo or paste an image link to set as your app wallpaper.</p>
+    
+    <div class="field">
+      <label>UPLOAD PHOTO FROM DEVICE</label>
+      <input type="file" id="bgFileInput" accept="image/*">
+      <div class="hint">Select your photo directly from your device.</div>
+    </div>
+
+    <div class="field" style="margin-top: 15px;">
+      <label>OR PASTE IMAGE URL</label>
+      <input type="url" id="bgUrlInput" placeholder="https://example.com/photo.jpg">
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button class="primary-button" id="applyBgUrlBtn" style="flex: 1;">Apply Image</button>
+      <button class="top-btn" id="resetBgBtn" style="padding: 12px 18px;">Reset Default</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// DOM HELPER
+const $ = id => document.getElementById(id);
+
+// APP STATE
+let activeDisplayMonth = new Date();
+let currentPredictions = null;
+let showAllHistory = false;
+
+// DEFAULT EMBEDDED DYNAMIC BACKGROUND PATTERN
+const DEFAULT_BG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='1200' viewBox='0 0 800 1200'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%233a1c3e'/%3E%3Cstop offset='50%25' stop-color='%235c2957'/%3E%3Cstop offset='100%25' stop-color='%2328132b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23g)'/%3E%3Ccircle cx='400' cy='300' r='250' fill='%23f7aef8' opacity='0.15' filter='blur(40px)'/%3E%3Ccircle cx='600' cy='800' r='300' fill='%23b388ff' opacity='0.15' filter='blur(50px)'/%3E%3C/svg%3E";
+
+// INITIALIZATION ON PAGE LOAD
+window.addEventListener("DOMContentLoaded", () => {
+  initTheme();
+  initBackground();
+  initNotificationSystem();
+  loadSavedData();
+  setupEventListeners();
+  startNotificationPolling();
+});
+
+// DATE HELPERS
+function addDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function dateKey(date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function formatDate(date) {
+  return date.toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+}
+
+function shortDate(date) {
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short"
+  });
+}
+
+// LOCAL STORAGE MANAGEMENT
+function loadSavedData() {
+  const savedSettings = localStorage.getItem("gf_settings");
+  if (savedSettings) {
+    const data = JSON.parse(savedSettings);
+    $("lastPeriod").value = data.lastPeriod || "";
+    $("cycleLength").value = data.cycleLength || "28";
+    $("periodLength").value = data.periodLength || "5";
+    $("regularity").value = data.regularity || "regular";
+
+    if (data.lastPeriod) {
+      calculateAndRender(false);
+    }
+  } else {
+    const today = new Date();
+    $("lastPeriod").value = dateKey(today);
+    calculateAndRender(false);
+  }
+
+  renderHistory();
+}
+
+function saveSettings(lastPeriod, cycleLength, periodLength, regularity) {
+  const settings = { lastPeriod, cycleLength, periodLength, regularity };
+  localStorage.setItem("gf_settings", JSON.stringify(settings));
+
+  let history = JSON.parse(localStorage.getItem("gf_history") || "[]");
+  if (!history.some(item => item.date === lastPeriod)) {
+    history.unshift({
+      date: lastPeriod,
+      cycleLength: cycleLength,
+      periodLength: periodLength,
+      loggedAt: new Date().toLocaleDateString()
+    });
+    localStorage.setItem("gf_history", JSON.stringify(history));
+  }
+  renderHistory();
+}
+
+// RENDER HISTORY WITH SHOW MORE DROPDOWN TOGGLE
+function renderHistory() {
+  const historyList = $("historyList");
+  const toggleBtn = $("toggleHistoryBtn");
+  let history = JSON.parse(localStorage.getItem("gf_history") || "[]");
+
+  if (history.length === 0) {
+    historyList.innerHTML = '<div style="font-size: 12px; color: var(--text-sub); text-align: center; padding: 10px;">No logged cycles yet.</div>';
+    toggleBtn.style.display = "none";
+    return;
+  }
+
+  // Show only 1 item by default, or all items if toggled
+  const itemsToDisplay = showAllHistory ? history : history.slice(0, 1);
+
+  historyList.innerHTML = itemsToDisplay.map((item, index) => {
+    const d = new Date(item.date + "T12:00:00");
+    return `
+      <div class="history-item">
+        <div class="history-info">
+          <strong>${formatDate(d)}</strong>
+          <span>Cycle: ${item.cycleLength}d | Period: ${item.periodLength}d</span>
+        </div>
+        <button class="delete-btn" onclick="deleteHistoryItem(${index})" title="Delete entry">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </div>
+    `;
+  }).join("");
+
+  if (history.length > 1) {
+    toggleBtn.style.display = "flex";
+    $("toggleHistoryText").textContent = showAllHistory ? "Hide History" : `See More History (${history.length - 1} more)`;
+    $("toggleHistoryIcon").className = showAllHistory ? "fa-solid fa-chevron-up" : "fa-solid fa-chevron-down";
+  } else {
+    toggleBtn.style.display = "none";
+  }
+}
+
+window.deleteHistoryItem = function(index) {
+  let history = JSON.parse(localStorage.getItem("gf_history") || "[]");
+  history.splice(index, 1);
+  localStorage.setItem("gf_history", JSON.stringify(history));
+  renderHistory();
+};
+
+// CALENDAR INTEGRATION FUNCTIONS
+function exportToGoogleCalendar() {
+  if (!currentPredictions) {
+    alert("Please calculate your cycle first!");
+    return;
+  }
+
+  const startDate = currentPredictions.nextPeriod.toISOString().replace(/-|:|\.\d\d\d/g, "").substring(0, 8);
+  const endDate = addDays(currentPredictions.periodEnd, 1).toISOString().replace(/-|:|\.\d\d\d/g, "").substring(0, 8);
+
+  const title = encodeURIComponent("🌸 GLORY'S FLOW - Expected Period");
+  const details = encodeURIComponent("Reminder: Period expected around this timeframe. Stay comfortable! 💕");
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDate}/${endDate}&details=${details}`;
+
+  window.open(url, "_blank");
+}
+
+function exportToIcsFile() {
+  if (!currentPredictions) {
+    alert("Please calculate your cycle first!");
+    return;
+  }
+
+  const startDate = currentPredictions.nextPeriod.toISOString().replace(/-|:|\.\d\d\d/g, "").substring(0, 8);
+  const endDate = addDays(currentPredictions.periodEnd, 1).toISOString().replace(/-|:|\.\d\d\d/g, "").substring(0, 8);
+
+  const icsContent = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Glorys Flow Cycle Tracker//EN",
+    "BEGIN:VEVENT",
+    `SUMMARY:🌸 GLORY'S FLOW - Expected Period`,
+    `DESCRIPTION:Expected period start. Stay prepared and comfortable!`,
+    `DTSTART;VALUE=DATE:${startDate}`,
+    `DTEND;VALUE=DATE:${endDate}`,
+    "BEGIN:VALARM",
+    "TRIGGER:-P2D",
+    "ACTION:DISPLAY",
+    "DESCRIPTION:Period reminder - expected in 2 days!",
+    "END:VALARM",
+    "END:VEVENT",
+    "END:VCALENDAR"
+  ].join("\r\n");
+
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+  const link = document.createElement("a");
+  link.href = window.URL.createObjectURL(blob);
+  link.setAttribute("download", "glorys_flow_reminder.ics");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// THEME HANDLING
+function initTheme() {
+  const savedTheme = localStorage.getItem("gf_theme") || "dark";
+  document.documentElement.setAttribute("data-theme", savedTheme);
+  updateThemeUI(savedTheme);
+}
+
+function updateThemeUI(theme) {
+  const icon = $("themeIcon");
+  const text = $("themeText");
+  if (theme === "light") {
+    icon.className = "fa-solid fa-sun";
+    text.textContent = "Light";
+  } else {
+    icon.className = "fa-solid fa-moon";
+    text.textContent = "Dark";
+  }
+}
+
+// BACKGROUND HANDLING
+function initBackground() {
+  const savedBg = localStorage.getItem("gf_bg") || DEFAULT_BG;
+  $("bgLayer").style.backgroundImage = `url("${savedBg}")`;
+}
+
+function setBackground(src) {
+  $("bgLayer").style.backgroundImage = `url("${src}")`;
+  localStorage.setItem("gf_bg", src);
+}
+
+// NOTIFICATION SYSTEM & PERMISSIONS
+function initNotificationSystem() {
+  updateNotificationStatusBadge();
+}
+
+function updateNotificationStatusBadge() {
+  const badge = $("notificationStatusBadge");
+  if (!("Notification" in window)) {
+    badge.textContent = "Not Supported";
+    badge.className = "status-badge denied";
+    return;
+  }
+
+  const permission = Notification.permission;
+  badge.textContent = permission.toUpperCase();
+
+  if (permission === "granted") {
+    badge.className = "status-badge granted";
+  } else if (permission === "denied") {
+    badge.className = "status-badge denied";
+  } else {
+    badge.className = "status-badge prompt";
+  }
+}
+
+function requestNotificationPermission() {
+  if (!("Notification" in window)) {
+    alert("Web Notifications are not supported in this browser.");
+    return;
+  }
+
+  Notification.requestPermission().then(permission => {
+    updateNotificationStatusBadge();
+    if (permission === "granted") {
+      triggerSystemNotification(
+        "🌸 GLORY'S FLOW Notifications Active!",
+        "You will receive reminders 2 days before your expected period."
+      );
+    }
+  });
+}
+
+function triggerSystemNotification(title, body) {
+  if (!("Notification" in window)) return;
+
+  if (Notification.permission === "granted") {
+    new Notification(title, {
+      body: body,
+      icon: "https://cdn-icons-png.flaticon.com/512/2913/2913520.png",
+      badge: "https://cdn-icons-png.flaticon.com/512/2913/2913520.png"
+    });
+  } else {
+    alert(`${title}\n\n${body}`);
+  }
+}
+
+function startNotificationPolling() {
+  checkAndTriggerPeriodReminder();
+  setInterval(checkAndTriggerPeriodReminder, 3600000);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      checkAndTriggerPeriodReminder();
+    }
+  });
+}
+
+function checkAndTriggerPeriodReminder() {
+  if (!currentPredictions) return;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const reminderDate = addDays(currentPredictions.nextPeriod, -2);
+  reminderDate.setHours(0, 0, 0, 0);
+
+  $("reminderStatusText").textContent = `Next 2-day reminder scheduled for: ${formatDate(reminderDate)}`;
+
+  if (dateKey(today) === dateKey(reminderDate)) {
+    const lastNotified = localStorage.getItem("gf_last_notified");
+    const notificationKey = dateKey(today) + "_" + dateKey(currentPredictions.nextPeriod);
+
+    if (lastNotified !== notificationKey) {
+      triggerSystemNotification(
+        "🌸 GLORY'S FLOW - Period Reminder",
+        "Your period is expected in 2 days! Get ready and stay comfortable. 💕"
+      );
+      localStorage.setItem("gf_last_notified", notificationKey);
+    }
+  }
+}
+
+// CALENDAR GENERATOR
+function makeCalendar(monthDate, periodStart, periodEnd, fertileStart, ovulation) {
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  let html = '<table class="calendar"><thead><tr>';
+  weekdays.forEach(day => { html += `<th>${day}</th>`; });
+  html += "</tr></thead><tbody>";
+
+  const rows = Math.ceil((firstDay + totalDays) / 7);
+
+  for (let row = 0; row < rows; row++) {
+    html += "<tr>";
+    for (let col = 0; col < 7; col++) {
+      const number = row * 7 + col - firstDay + 1;
+
+      if (number < 1 || number > totalDays) {
+        html += '<td class="blank"></td>';
+        continue;
+      }
+
+      const day = new Date(year, month, number, 12);
+      const key = dateKey(day);
+      let classes = "";
+
+      if (key >= dateKey(periodStart) && key <= dateKey(periodEnd)) {
+        classes = "period";
+      } else if (key >= dateKey(fertileStart) && key <= dateKey(ovulation)) {
+        classes = "fertile";
+      }
+
+      if (key === dateKey(ovulation)) {
+        classes = "ovulation";
+      }
+
+      if (key === dateKey(new Date())) {
+        classes += " today";
+      }
+
+      html += `<td class="${classes.trim()}">${number}</td>`;
+    }
+    html += "</tr>";
+  }
+
+  html += "</tbody></table>";
+  return html;
+}
+
+// CALCULATION LOGIC
+function calculateAndRender(scroll = true) {
+  const rawDate = $("lastPeriod").value;
+  const cycleLength = Number($("cycleLength").value);
+  const periodLength = Number($("periodLength").value);
+  const regularity = $("regularity").value;
+  const error = $("error");
+
+  error.style.display = "none";
+
+  if (!rawDate) {
+    error.textContent = "Please enter the first day of your last period.";
+    error.style.display = "block";
+    return;
+  }
+
+  let lastPeriod = new Date(rawDate + "T12:00:00");
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+
+  let nextPeriod = addDays(lastPeriod, cycleLength);
+  while (nextPeriod < today && regularity !== "irregular") {
+    lastPeriod = nextPeriod;
+    nextPeriod = addDays(lastPeriod, cycleLength);
+  }
+
+  const periodEnd = addDays(nextPeriod, periodLength - 1);
+  const ovulation = addDays(nextPeriod, -14);
+  const fertileStart = addDays(ovulation, -5);
+
+  currentPredictions = {
+    nextPeriod, periodEnd, ovulation, fertileStart
+  };
+
+  $("nextPeriod").textContent = formatDate(nextPeriod);
+  $("periodNote").textContent = `Expected bleeding: ${shortDate(nextPeriod)} – ${shortDate(periodEnd)}.`;
+
+  if (regularity === "irregular") {
+    $("periodNote").textContent += " Cycles vary; estimates are approximate.";
+  }
+
+  $("ovulation").textContent = formatDate(ovulation);
+  $("fertile").textContent = `${shortDate(fertileStart)} – ${shortDate(ovulation)}`;
+
+  activeDisplayMonth = new Date(nextPeriod.getFullYear(), nextPeriod.getMonth(), 1);
+  renderCalendarView();
+
+  saveSettings(rawDate, cycleLength, periodLength, regularity);
+  checkAndTriggerPeriodReminder();
+
+  if (scroll) {
+    $("calendarCard").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function renderCalendarView() {
+  if (!currentPredictions) return;
+
+  $("monthLabel").textContent = activeDisplayMonth.toLocaleDateString("en-GB", {
+    month: "long",
+    year: "numeric"
+  });
+
+  $("calendar").innerHTML = makeCalendar(
+    activeDisplayMonth,
+    currentPredictions.nextPeriod,
+    currentPredictions.periodEnd,
+    currentPredictions.fertileStart,
+    currentPredictions.ovulation
+  );
+}
+
+// EVENT LISTENERS
+function setupEventListeners() {
+  // Form submission
+  $("cycleForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    calculateAndRender(true);
+  });
+
+  // Calendar Navigation
+  $("prevMonth").addEventListener("click", () => {
+    activeDisplayMonth.setMonth(activeDisplayMonth.getMonth() - 1);
+    renderCalendarView();
+  });
+
+  $("nextMonth").addEventListener("click", () => {
+    activeDisplayMonth.setMonth(activeDisplayMonth.getMonth() + 1);
+    renderCalendarView();
+  });
+
+  // Add to Calendar Dropdown
+  $("addToCalendarBtn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    $("calendarDropdownMenu").classList.toggle("show");
+  });
+
+  document.addEventListener("click", () => {
+    $("calendarDropdownMenu").classList.remove("show");
+  });
+
+  $("googleCalBtn").addEventListener("click", exportToGoogleCalendar);
+  $("appleCalBtn").addEventListener("click", exportToIcsFile);
+
+  // Toggle History List Expansion
+  $("toggleHistoryBtn").addEventListener("click", () => {
+    showAllHistory = !showAllHistory;
+    renderHistory();
+  });
+
+  // Notification Buttons
+  $("enableNotifyBtn").addEventListener("click", requestNotificationPermission);
+  $("testNotifyBtn").addEventListener("click", () => {
+    triggerSystemNotification(
+      "🌸 GLORY'S FLOW - Period Reminder",
+      "Your period is expected in 2 days! Get ready and stay comfortable. 💕"
+    );
+  });
+
+  // Theme Toggle
+  $("themeToggleBtn").addEventListener("click", () => {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    const newTheme = currentTheme === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("gf_theme", newTheme);
+    updateThemeUI(newTheme);
+  });
+
+  // Background Modal Controls
+  $("bgPickerBtn").addEventListener("click", () => $("bgModal").classList.add("active"));
+  $("closeBgModal").addEventListener("click", () => $("bgModal").classList.remove("active"));
+
+  // Background File Upload Input
+  $("bgFileInput").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        setBackground(evt.target.result);
+        $("bgModal").classList.remove("active");
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Background URL Input
+  $("applyBgUrlBtn").addEventListener("click", () => {
+    const url = $("bgUrlInput").value.trim();
+    if (url) {
+      setBackground(url);
+      $("bgModal").classList.remove("active");
+    }
+  });
+
+  // Reset Background to Default
+  $("resetBgBtn").addEventListener("click", () => {
+    setBackground(DEFAULT_BG);
+    $("bgModal").classList.remove("active");
+  });
+}
+</script>
+
+</body>
+</html>
