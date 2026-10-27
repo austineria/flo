@@ -761,7 +761,34 @@ footer {
       <span>GLORY'S FLOW</span>
     </div>
     <div class="top-actions">
+<!-- Text display container -->
+<div id="quote-display-box" style="font-size: 1.1rem; color: #ff4b72; font-weight: 500; transition: opacity 1s ease-in-out; opacity: 1; margin: 15px 0; text-align: center;">
+  You are doing amazing, Queen of Queens! 💕
+</div>
 
+<!-- Script to animate and change messages -->
+<script>
+  const messagesList = [
+    "You are doing amazing, Queen of Queens! 💕",
+    "shey you know i love you ehnn chummy . 🌸",
+    "don't worry the pains would go okay. ✨",
+    "don't let anyone call you crayfish ooo. 💖"
+  ];
+
+  let currentMsgIndex = 0;
+  const quoteBox = document.getElementById("quote-display-box");
+
+  setInterval(() => {
+    if (quoteBox) {
+      quoteBox.style.opacity = 0;
+      setTimeout(() => {
+        currentMsgIndex = (currentMsgIndex + 1) % messagesList.length;
+        quoteBox.innerText = messagesList[currentMsgIndex];
+        quoteBox.style.opacity = 1;
+      }, 1000);
+    }
+  }, 8000);
+</script>
       <!-- ADD TO CALENDAR BUTTON WITH DROPDOWN -->
       <div class="calendar-dropdown">
         <button class="top-btn" id="addToCalendarBtn" title="Sync with your calendar">
