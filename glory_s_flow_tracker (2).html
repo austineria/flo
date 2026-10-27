@@ -5,7 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#492744">
 <title>GLORY'S FLOW | Period & Ovulation Tracker</title>
-
+<!-- OneSignal Web Push SDK -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "cffd4131-0a76-4b5b-96f8-7d605d86e4e2",
+      safari_web_id: "",
+      notifyButton: {
+        enable: true,
+      },
+    });
+  });
+</script>
 <!-- FontAwesome Icons for clean UI elements -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
